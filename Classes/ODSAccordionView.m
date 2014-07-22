@@ -14,6 +14,13 @@
 #define DIVIDER_HEIGHT ([UIScreen mainScreen].scale == 2.0) ? 0.5 : 1.0
 #define SECTION_HEIGHT_GETTER NSStringFromSelector(@selector(height))
 
+@interface ODSAccordionView ()
+
+@property (nonatomic, assign) BOOL animationEnabled;
+@property (nonatomic, assign) BOOL firstLayout;
+
+@end
+
 @implementation ODSAccordionView {
     NSArray *_sectionViews;
     ODSAccordionSectionStyle *_sectionStyle;
@@ -24,6 +31,7 @@
     if (self) {
         _sectionViews = @[];
         _sectionStyle = sectionStyle;
+        [self setFirstLayout:YES];
         for (NSUInteger i = 0; i < [sections count]; i++) {
             ODSAccordionSection*currentSection = [sections objectAtIndex:i];
             ODSAccordionSectionView *sectionView =
@@ -41,18 +49,12 @@
 
 -(void)addSection:(ODSAccordionSectionView*)newSection {
     [self addSubview:newSection];
-//    [self requestNotificationWhenSectionHeightChanges:newSection];
     _sectionViews = [_sectionViews arrayByAddingObject:newSection];
     BOOL isFirstSection = [_sectionViews count] == 1;
     if (!isFirstSection){
         [newSection.header addSubview:[self makeDivider:_sectionStyle.dividerColor]];
     }
 }
-
-
-//-(void)requestNotificationWhenSectionHeightChanges:(ODSAccordionSectionView *)sectionView {
-//    [sectionView addObserver:self forKeyPath:SECTION_HEIGHT_GETTER options:0 context:nil];
-//}
 
 -(void)dealloc {
     for (ODSAccordionSectionView *section in _sectionViews){
@@ -92,61 +94,38 @@
     } else {
         height = self.frame.size.height / _sectionViews.count;
     }
-    NSLog(@"%f",height);
+
     [_sectionStyle setHeaderHeight:height];
+    [self setAnimationEnabled:YES];
     [self setNeedsLayout];
 }
 
 -(void)layoutSubviews {
-    [super layoutSubviews];
-    [self updateViewLayout];
-}
-
--(void)updateViewLayout {
-    [self recalculateSectionPositionsAndHeight];
-    if (_sectionStyle.stickyHeaders){
-        [self preventSectionHeaderFromBeingScrolledOutOfViewport];
+    if (self.firstLayout) {
+        [self setFirstLayout:NO];
+        CGFloat height = self.frame.size.height / _sectionViews.count;
+        [_sectionStyle setHeaderHeight:height];
     }
-}
-
--(void)preventSectionHeaderFromBeingScrolledOutOfViewport {
-//    for (ODSAccordionSectionView *section in _sectionViews){
-//        CGPoint contentOffsetInSection = [self convertPoint:self.contentOffset toView:section];
-//        CGFloat highestPossiblePosition = 0;
-//        CGFloat lowestPossiblePosition = section.frame.size.height - section.header.frame.size.height;
-//        CGFloat headerYPosition = MAX(highestPossiblePosition,
-//                                      MIN(contentOffsetInSection.y + self.contentInset.top, lowestPossiblePosition));
-//        
-//        section.header.frame = CGRectMake(0, headerYPosition,
-//                               section.header.frame.size.width, section.header.frame.size.height);
-//        section.header.alpha = 0.95;
-//        [section bringSubviewToFront:section.header];
-//    }
+    
+    
+    if(self.animationEnabled){
+        [UIView animateWithDuration:0.5 animations:^{
+            [super layoutSubviews];
+            [self recalculateSectionPositionsAndHeight];
+        }];
+    } else {
+        [super layoutSubviews];
+        [self recalculateSectionPositionsAndHeight];
+    }
 }
 
 -(void)recalculateSectionPositionsAndHeight {
     CGFloat bottomOfPreviousSection = 0;
     
-    CGFloat openSectionHeight = 0;
-    
-//    for (ODSAccordionSectionView* section in _sectionViews) {
-//        if ([section isExpanded]) {
-//            openSectionHeight = section.sectionView.frame.size.height;
-//            break;
-//        }
-//    }
-//    
-//    CGFloat sectionHeight = (_sectionViews && _sectionViews.count > 0) ? ((self.frame.size.height - openSectionHeight) / _sectionViews.count) : 0;
-//    
-//    [_sectionStyle setHeaderHeight:sectionHeight];
-//    
-
-    
     for (ODSAccordionSectionView *section in _sectionViews) {
         CGRect newFrame = CGRectMake(0, bottomOfPreviousSection, self.width, section.height);
         if (!CGRectEqualToRect(newFrame, section.frame)){
             section.frame = newFrame;
-            NSLog(@"%@",section);
         }
         bottomOfPreviousSection = bottomOfPreviousSection + section.height;
     }
@@ -155,33 +134,6 @@
 
 -(void)updateScrollViewContentSize:(CGFloat)bottomOfLastSection {
     self.contentSize = CGSizeMake([self width], self.frame.size.height);
-}
-
-//-(void)observeValueForKeyPath:(NSString *)keyPath
-//                     ofObject:(id)object
-//                       change:(NSDictionary *)change
-//                      context:(void *)context {
-//    if ([keyPath isEqualToString:SECTION_HEIGHT_GETTER]) {
-//        ODSAccordionSectionView *changedSection = (ODSAccordionSectionView *) object;
-//        [UIView animateWithDuration:0.5 animations:^{
-//            [self updateViewLayout];
-//            if (changedSection.isExpanded){
-//                [self makeSureSomeOfTheExpandedContentIsVisible:changedSection];
-//            }
-//        } completion:^(BOOL finished){
-//            [self flashScrollIndicators];
-//        }];
-//    }
-//}
-
--(void)makeSureSomeOfTheExpandedContentIsVisible:(ODSAccordionSectionView *)expandedSection {
-//    CGRect expandedSectionRect = [self convertRect:expandedSection.sectionView.frame
-//                                          fromView:expandedSection];
-//    //FIXME: figure out why the origin is sometimes negative
-//    if (expandedSectionRect.origin.y > 0){
-//        [self scrollRectToVisible:CGRectMake(expandedSectionRect.origin.x, expandedSectionRect.origin.y, self.width, 100)
-//                         animated:YES];
-//    }
 }
 
 -(CGFloat)width {

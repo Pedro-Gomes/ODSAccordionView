@@ -157,7 +157,6 @@
 }
 
 -(CGFloat)expandedHeight {
-//    CGSize fittingSize = _sectionView.bounds.size;
     return self.bodyHeight  + self.headerHeight;
 }
 
