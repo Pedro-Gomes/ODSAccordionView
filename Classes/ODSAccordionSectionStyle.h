@@ -19,8 +19,6 @@ typedef enum ODSAccordionHeaderStyle : NSUInteger {
 @property (nonatomic) UIFont  *headerTitleLabelFont;
 /// Defaults to [UIColor blackColor]
 @property (nonatomic) UIColor *headerTitleLabelTextColor;
-/// Defaults to [UIColor darkGrayColor]
-@property (nonatomic) UIColor *headerTitleLabelHighlightedTextColor;
 /// Defaults to ODSAccordionHeaderStyleLabelLeft
 @property (nonatomic) ODSAccordionHeaderStyle headerStyle;
 /// Defaults to [UIColor clearColor]

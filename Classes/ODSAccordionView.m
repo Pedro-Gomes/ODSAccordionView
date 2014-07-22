@@ -24,13 +24,15 @@
     if (self) {
         _sectionViews = @[];
         _sectionStyle = sectionStyle;
-        self.delaysContentTouches = NO;
         for (NSUInteger i = 0; i < [sections count]; i++) {
             ODSAccordionSection*currentSection = [sections objectAtIndex:i];
             ODSAccordionSectionView *sectionView =
                     [[ODSAccordionSectionView alloc] initWithTitle:currentSection.title
                                                            andView:currentSection.view
                                                       sectionStyle:sectionStyle];
+            sectionView.tag = i + 1 ; //don't use tag 0
+            sectionView.delegate = (id<AccordionSectionDelegate>)self;
+            sectionView.bodyHeight = currentSection.view.frame.size.height;
             [self addSection:sectionView];
         }
     }
@@ -39,7 +41,7 @@
 
 -(void)addSection:(ODSAccordionSectionView*)newSection {
     [self addSubview:newSection];
-    [self requestNotificationWhenSectionHeightChanges:newSection];
+//    [self requestNotificationWhenSectionHeightChanges:newSection];
     _sectionViews = [_sectionViews arrayByAddingObject:newSection];
     BOOL isFirstSection = [_sectionViews count] == 1;
     if (!isFirstSection){
@@ -48,9 +50,9 @@
 }
 
 
--(void)requestNotificationWhenSectionHeightChanges:(ODSAccordionSectionView *)sectionView {
-    [sectionView addObserver:self forKeyPath:SECTION_HEIGHT_GETTER options:0 context:nil];
-}
+//-(void)requestNotificationWhenSectionHeightChanges:(ODSAccordionSectionView *)sectionView {
+//    [sectionView addObserver:self forKeyPath:SECTION_HEIGHT_GETTER options:0 context:nil];
+//}
 
 -(void)dealloc {
     for (ODSAccordionSectionView *section in _sectionViews){
@@ -72,6 +74,29 @@
     return divider;
 }
 
+#pragma AccordionSectionViewDelegate
+-(void)accordionSection:(id)section didChangeStatus:(BOOL)expanded headerHeight:(CGFloat)headerHeight bodyHeight:(CGFloat)bodyHeight {
+    ODSAccordionSectionView* sectionView = section;
+    int tag = sectionView.tag;
+    
+    for (ODSAccordionSectionView *section in _sectionViews) {
+        if (section.tag != tag) {
+            [section collapseSectionAnimated:NO];
+        }
+    }
+    
+    CGFloat height;
+    
+    if (expanded) {
+        height = (self.frame.size.height - bodyHeight) / _sectionViews.count;
+    } else {
+        height = self.frame.size.height / _sectionViews.count;
+    }
+    NSLog(@"%f",height);
+    [_sectionStyle setHeaderHeight:height];
+    [self setNeedsLayout];
+}
+
 -(void)layoutSubviews {
     [super layoutSubviews];
     [self updateViewLayout];
@@ -85,26 +110,43 @@
 }
 
 -(void)preventSectionHeaderFromBeingScrolledOutOfViewport {
-    for (ODSAccordionSectionView *section in _sectionViews){
-        CGPoint contentOffsetInSection = [self convertPoint:self.contentOffset toView:section];
-        CGFloat highestPossiblePosition = 0;
-        CGFloat lowestPossiblePosition = section.frame.size.height - section.header.frame.size.height;
-        CGFloat headerYPosition = MAX(highestPossiblePosition,
-                                      MIN(contentOffsetInSection.y + self.contentInset.top, lowestPossiblePosition));
-        
-        section.header.frame = CGRectMake(0, headerYPosition,
-                               section.header.frame.size.width, section.header.frame.size.height);
-        section.header.alpha = 0.95;
-        [section bringSubviewToFront:section.header];
-    }
+//    for (ODSAccordionSectionView *section in _sectionViews){
+//        CGPoint contentOffsetInSection = [self convertPoint:self.contentOffset toView:section];
+//        CGFloat highestPossiblePosition = 0;
+//        CGFloat lowestPossiblePosition = section.frame.size.height - section.header.frame.size.height;
+//        CGFloat headerYPosition = MAX(highestPossiblePosition,
+//                                      MIN(contentOffsetInSection.y + self.contentInset.top, lowestPossiblePosition));
+//        
+//        section.header.frame = CGRectMake(0, headerYPosition,
+//                               section.header.frame.size.width, section.header.frame.size.height);
+//        section.header.alpha = 0.95;
+//        [section bringSubviewToFront:section.header];
+//    }
 }
 
 -(void)recalculateSectionPositionsAndHeight {
     CGFloat bottomOfPreviousSection = 0;
+    
+    CGFloat openSectionHeight = 0;
+    
+//    for (ODSAccordionSectionView* section in _sectionViews) {
+//        if ([section isExpanded]) {
+//            openSectionHeight = section.sectionView.frame.size.height;
+//            break;
+//        }
+//    }
+//    
+//    CGFloat sectionHeight = (_sectionViews && _sectionViews.count > 0) ? ((self.frame.size.height - openSectionHeight) / _sectionViews.count) : 0;
+//    
+//    [_sectionStyle setHeaderHeight:sectionHeight];
+//    
+
+    
     for (ODSAccordionSectionView *section in _sectionViews) {
         CGRect newFrame = CGRectMake(0, bottomOfPreviousSection, self.width, section.height);
         if (!CGRectEqualToRect(newFrame, section.frame)){
             section.frame = newFrame;
+            NSLog(@"%@",section);
         }
         bottomOfPreviousSection = bottomOfPreviousSection + section.height;
     }
@@ -112,34 +154,34 @@
 }
 
 -(void)updateScrollViewContentSize:(CGFloat)bottomOfLastSection {
-    self.contentSize = CGSizeMake([self width], bottomOfLastSection);
+    self.contentSize = CGSizeMake([self width], self.frame.size.height);
 }
 
--(void)observeValueForKeyPath:(NSString *)keyPath
-                     ofObject:(id)object
-                       change:(NSDictionary *)change
-                      context:(void *)context {
-    if ([keyPath isEqualToString:SECTION_HEIGHT_GETTER]) {
-        ODSAccordionSectionView *changedSection = (ODSAccordionSectionView *) object;
-        [UIView animateWithDuration:0.5 animations:^{
-            [self updateViewLayout];
-            if (changedSection.isExpanded){
-                [self makeSureSomeOfTheExpandedContentIsVisible:changedSection];
-            }
-        } completion:^(BOOL finished){
-            [self flashScrollIndicators];
-        }];
-    }
-}
+//-(void)observeValueForKeyPath:(NSString *)keyPath
+//                     ofObject:(id)object
+//                       change:(NSDictionary *)change
+//                      context:(void *)context {
+//    if ([keyPath isEqualToString:SECTION_HEIGHT_GETTER]) {
+//        ODSAccordionSectionView *changedSection = (ODSAccordionSectionView *) object;
+//        [UIView animateWithDuration:0.5 animations:^{
+//            [self updateViewLayout];
+//            if (changedSection.isExpanded){
+//                [self makeSureSomeOfTheExpandedContentIsVisible:changedSection];
+//            }
+//        } completion:^(BOOL finished){
+//            [self flashScrollIndicators];
+//        }];
+//    }
+//}
 
 -(void)makeSureSomeOfTheExpandedContentIsVisible:(ODSAccordionSectionView *)expandedSection {
-    CGRect expandedSectionRect = [self convertRect:expandedSection.sectionView.frame
-                                          fromView:expandedSection];
-    //FIXME: figure out why the origin is sometimes negative
-    if (expandedSectionRect.origin.y > 0){
-        [self scrollRectToVisible:CGRectMake(expandedSectionRect.origin.x, expandedSectionRect.origin.y, self.width, 100)
-                         animated:YES];
-    }
+//    CGRect expandedSectionRect = [self convertRect:expandedSection.sectionView.frame
+//                                          fromView:expandedSection];
+//    //FIXME: figure out why the origin is sometimes negative
+//    if (expandedSectionRect.origin.y > 0){
+//        [self scrollRectToVisible:CGRectMake(expandedSectionRect.origin.x, expandedSectionRect.origin.y, self.width, 100)
+//                         animated:YES];
+//    }
 }
 
 -(CGFloat)width {

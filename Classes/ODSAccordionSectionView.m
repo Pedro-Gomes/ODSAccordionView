@@ -57,7 +57,6 @@
     _header = [UIButton buttonWithType:UIButtonTypeCustom];
     [_header setTitle:sectionTitle forState:UIControlStateNormal];
     [_header setTitleColor:_sectionStyle.headerTitleLabelTextColor forState:UIControlStateNormal];
-    [_header setTitleColor:_sectionStyle.headerTitleLabelHighlightedTextColor forState:UIControlStateHighlighted];
     _header.backgroundColor = _sectionStyle.headerBackgroundColor;
     _header.titleLabel.font = _sectionStyle.headerTitleLabelFont;
     [_header addTarget:self action:@selector(toggleButtonPressed:) forControlEvents:UIControlEventTouchDown];
@@ -87,6 +86,13 @@
     [_arrowIcon pointUpAnimated:animated];
 }
 
+-(void)statusChanged:(BOOL)status {
+    [self.delegate accordionSection:self
+                    didChangeStatus:status
+                       headerHeight:self.headerHeight
+                         bodyHeight:[self expandedHeight] - self.headerHeight];
+}
+
 -(void)sectionViewAlphaChanged:(BOOL)animated {
     if (animated){
         [UIView animateWithDuration:0.5 animations:^{ _sectionView.alpha = _sectionViewAlpha; }];
@@ -98,8 +104,10 @@
 -(void)toggleButtonPressed:(id)sectionPressed {
     if (_expanded){
         [self collapseSectionAnimated:YES];
+        [self statusChanged:NO];
     } else {
         [self expandSectionAnimated:YES];
+        [self statusChanged:YES];
     }
     [self setNeedsLayout];
 }
@@ -144,17 +152,21 @@
 }
 
 -(void)layoutSection {
-    CGSize fittingSize = [_sectionView sizeThatFits:_sectionView.bounds.size];
+    CGSize fittingSize = _sectionView.bounds.size;
     _sectionView.frame = CGRectMake(0, self.headerHeight, self.width, fittingSize.height);
 }
 
 -(CGFloat)expandedHeight {
-    CGSize fittingSize = [_sectionView sizeThatFits:_sectionView.bounds.size];
-    return fittingSize.height  + self.headerHeight;
+//    CGSize fittingSize = _sectionView.bounds.size;
+    return self.bodyHeight  + self.headerHeight;
 }
 
 -(CGFloat)collapsedHeight {
     return self.headerHeight;
+}
+
+-(CGFloat)height {
+    return (self.isExpanded) ? [self expandedHeight] : [self collapsedHeight];
 }
 
 -(CGFloat)width {

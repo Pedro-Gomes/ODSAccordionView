@@ -8,12 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "ODSAccordionSection.h"
+#import "ODSAccordionSectionView.h"
 #import "ODSMacros.h"
 
 @class ODSAccordionSectionStyle;
 
 
-@interface ODSAccordionView : UIScrollView
+@interface ODSAccordionView : UIScrollView<AccordionSectionDelegate>
 
 -(id)initWithSections:(NSArray *)sections andSectionStyle:(ODSAccordionSectionStyle *)sectionStyle;
 
