@@ -33,6 +33,11 @@
                      andView:(UIView *)sectionView
                 sectionStyle:(ODSAccordionSectionStyle *)sectionStyle NS_DESIGNATED_INITIALIZER;
 
+-(void)shouldPresentButton:(BOOL)presentButton
+                  withIcon:(UIImage *)image
+                     title:(NSString*)title
+                    action:(void (^)(id sender))block;
+
 
 -(void)collapseSectionAnimated:(BOOL)animated;
 -(void)expandSectionAnimated:(BOOL)animated;

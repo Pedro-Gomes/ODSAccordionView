@@ -14,11 +14,49 @@
 #define BOUNDS_KEY_PATH NSStringFromSelector(@selector(bounds))
 #define MARGIN 8
 
+@interface ODSAccordionSectionView ()
+
+@property (nonatomic, copy) void (^actionBlock)(id sender);
+@property (nonatomic, strong) UIButton* actionButton;
+
+@end
+
 @implementation ODSAccordionSectionView {
     ODSAccordionSectionStyle *_sectionStyle;
     CGFloat _sectionViewAlpha;
     ODSArrowIcon *_arrowIcon;
 }
+
+-(void)shouldPresentButton:(BOOL)presentButton
+                  withIcon:(UIImage *)image
+                     title:(NSString*)title
+                    action:(void (^)(id sender))block {
+    if(presentButton){
+        self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        
+        if (image) {
+            [self.actionButton setImage:[UIImage imageNamed:@"icon_seta_back"] forState:UIControlStateNormal];
+            [self.actionButton.imageView setContentMode:UIViewContentModeCenter];
+        }
+        [self.actionButton addTarget:self action:@selector(actionButtonPress:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self setActionBlock:block];
+        [self.actionButton setBackgroundColor:_sectionStyle.buttonColor];
+        [self addSubview:self.actionButton];
+    } else {
+        [self.actionButton removeFromSuperview];
+        self.actionButton = nil;
+    }
+}
+
+-(IBAction)actionButtonPress:(id)sender {
+    if(self.actionBlock != nil) {
+        self.actionBlock(self.actionButton);
+    }
+}
+
+
+
 
 -(instancetype)initWithTitle:(NSString *)sectionTitle
                      andView:(UIView *)sectionView
@@ -141,6 +179,10 @@
         _arrowIcon.frame = CGRectMake(_header.center.x - (_arrowIcon.frame.size.width / 2),
                                       _header.frame.size.height - _arrowIcon.frame.size.height - MARGIN,
                                       _arrowIcon.frame.size.width, _arrowIcon.frame.size.height);
+    }
+    
+    if (self.actionButton != nil) {
+        self.actionButton.frame = CGRectMake(_header.frame.origin.x + self.width - _sectionStyle.buttonWidth, _header.frame.origin.y, _sectionStyle.buttonWidth, self.headerHeight);
     }
 }
 

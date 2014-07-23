@@ -18,4 +18,6 @@
 
 -(id)initWithSections:(NSArray *)sections andSectionStyle:(ODSAccordionSectionStyle *)sectionStyle;
 
+-(NSArray *)getSections;
+
 @end

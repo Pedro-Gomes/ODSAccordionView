@@ -38,6 +38,10 @@
                     [[ODSAccordionSectionView alloc] initWithTitle:currentSection.title
                                                            andView:currentSection.view
                                                       sectionStyle:sectionStyle];
+            
+            if ([currentSection.view respondsToSelector:@selector(setSectionView:)]) {
+                [currentSection.view performSelector:@selector(setSectionView:) withObject:sectionView];
+            }
             sectionView.tag = i + 1 ; //don't use tag 0
             sectionView.delegate = (id<AccordionSectionDelegate>)self;
             sectionView.bodyHeight = currentSection.view.frame.size.height;
@@ -142,6 +146,11 @@
 
 -(CGFloat)width {
     return self.frame.size.width;
+}
+
+/*This array will contain ODSAccordionSectionView objects and can be used to activate the section rightbuttons*/
+-(NSArray *)getSections {
+    return _sectionViews;
 }
 
 @end
