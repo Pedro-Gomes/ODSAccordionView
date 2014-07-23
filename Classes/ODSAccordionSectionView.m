@@ -32,17 +32,21 @@
                      title:(NSString*)title
                     action:(void (^)(id sender))block {
     if(presentButton){
-        self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        if(!self.actionButton){
+            self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        }
         
         if (image) {
-            [self.actionButton setImage:[UIImage imageNamed:@"icon_seta_back"] forState:UIControlStateNormal];
+            [self.actionButton setImage:[UIImage imageNamed:@"icon-reset-arrow"] forState:UIControlStateNormal];
             [self.actionButton.imageView setContentMode:UIViewContentModeCenter];
         }
         [self.actionButton addTarget:self action:@selector(actionButtonPress:) forControlEvents:UIControlEventTouchUpInside];
         
         [self setActionBlock:block];
         [self.actionButton setBackgroundColor:_sectionStyle.buttonColor];
-        [self addSubview:self.actionButton];
+        if (![self.actionButton isDescendantOfView:self]){
+            [self addSubview:self.actionButton];
+        }
     } else {
         [self.actionButton removeFromSuperview];
         self.actionButton = nil;
@@ -182,7 +186,16 @@
     }
     
     if (self.actionButton != nil) {
-        self.actionButton.frame = CGRectMake(_header.frame.origin.x + self.width - _sectionStyle.buttonWidth, _header.frame.origin.y, _sectionStyle.buttonWidth, self.headerHeight);
+        CGRect frame = CGRectMake(_header.frame.origin.x + self.width - _sectionStyle.buttonWidth, _header.frame.origin.y, _sectionStyle.buttonWidth, self.headerHeight);
+        
+        if(self.actionButton.frame.origin.x != 0){
+            [UIView animateWithDuration:_sectionStyle.animationDuration
+                             animations:^{
+                                 self.actionButton.frame = frame;
+                             }];
+        } else {
+            self.actionButton.frame = frame;
+        }
     }
 }
 

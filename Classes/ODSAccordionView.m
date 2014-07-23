@@ -113,7 +113,7 @@
     
     
     if(self.animationEnabled){
-        [UIView animateWithDuration:0.5 animations:^{
+        [UIView animateWithDuration:_sectionStyle.animationDuration animations:^{
             [super layoutSubviews];
             [self recalculateSectionPositionsAndHeight];
         }];

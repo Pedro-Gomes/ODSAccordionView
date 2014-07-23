@@ -34,6 +34,9 @@ typedef enum ODSAccordionHeaderStyle : NSUInteger {
 /// Keep the section headers visible on top while scrolling. Defaults to YES
 @property (nonatomic) BOOL stickyHeaders;
 
+/*Animation*/
+@property (nonatomic) CGFloat animationDuration;
+
 /**RightCornerButton**/
 @property (nonatomic) BOOL showButton;
 @property (nonatomic, strong) UIColor* buttonColor;
