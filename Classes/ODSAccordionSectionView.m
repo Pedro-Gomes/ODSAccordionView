@@ -136,7 +136,7 @@
         _arrowIcon.frame = CGRectMake(MARGIN, self.headerHeight / 2 - arrowSize.height / 2,
                                       arrowSize.width, arrowSize.height);
     } else if (_sectionStyle.headerStyle == ODSAccordionHeaderStyleLabelCentered) {
-        [_header setContentVerticalAlignment:UIControlContentVerticalAlignmentTop];
+        [_header setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
         [_header setTitleEdgeInsets:UIEdgeInsetsZero];
         _arrowIcon.frame = CGRectMake(_header.center.x - (_arrowIcon.frame.size.width / 2),
                                       _header.frame.size.height - _arrowIcon.frame.size.height - MARGIN,
