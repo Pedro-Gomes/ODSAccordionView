@@ -95,7 +95,7 @@
         height = self.frame.size.height / _sectionViews.count;
     }
 
-    [_sectionStyle setHeaderHeight:height];
+    [_sectionStyle setHeaderHeight:(height < 40) ? 40 : height];
     [self setAnimationEnabled:YES];
     [self setNeedsLayout];
 }
@@ -133,7 +133,11 @@
 }
 
 -(void)updateScrollViewContentSize:(CGFloat)bottomOfLastSection {
-    self.contentSize = CGSizeMake([self width], self.frame.size.height);
+    if(bottomOfLastSection > self.frame.size.height){
+        self.contentSize = CGSizeMake([self width], bottomOfLastSection);
+    }else {
+        self.contentSize = CGSizeMake([self width], self.frame.size.height);
+    }
 }
 
 -(CGFloat)width {
