@@ -20,4 +20,9 @@
 
 -(NSArray *)getSections;
 
+-(void)shouldPresentButton:(BOOL)presentButton
+                  withIcon:(UIImage *)image
+                     title:(NSString*)title
+                    action:(void (^)(id sender))block;
+
 @end

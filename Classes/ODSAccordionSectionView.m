@@ -33,17 +33,18 @@
                     action:(void (^)(id sender))block {
     if(presentButton){
         if(!self.actionButton){
-            self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+            self.actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
         }
         
         if (image) {
-            [self.actionButton setImage:[UIImage imageNamed:@"icon-reset-arrow"] forState:UIControlStateNormal];
+            [self.actionButton setBackgroundColor:_sectionStyle.buttonColor];
+            [self.actionButton setImage:image forState:UIControlStateNormal];
             [self.actionButton.imageView setContentMode:UIViewContentModeCenter];
         }
         [self.actionButton addTarget:self action:@selector(actionButtonPress:) forControlEvents:UIControlEventTouchUpInside];
         
         [self setActionBlock:block];
-        [self.actionButton setBackgroundColor:_sectionStyle.buttonColor];
+
         if (![self.actionButton isDescendantOfView:self]){
             [self addSubview:self.actionButton];
         }
@@ -166,6 +167,16 @@
 
 -(void)layoutHeader {
     _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
+    /*
+    if (_expanded) {
+        if (self.bodyHeight = 350) {
+            self.bodyHeight = self.bodyHeight + self.headerHeight;
+            _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, 0);
+        }
+    } else {
+        _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
+    }
+    */
     CGSize arrowSize = _arrowIcon.frame.size;
     if (_sectionStyle.headerStyle == ODSAccordionHeaderStyleLabelLeft){
         [_header setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
@@ -186,7 +197,7 @@
     }
     
     if (self.actionButton != nil) {
-        CGRect frame = CGRectMake(_header.frame.origin.x + self.width - _sectionStyle.buttonWidth, _header.frame.origin.y, _sectionStyle.buttonWidth, self.headerHeight);
+        CGRect frame = CGRectMake(_header.frame.origin.x + self.width - _sectionStyle.buttonWidth, _header.frame.origin.y + 1, _sectionStyle.buttonWidth, self.headerHeight - 1);
         
         if(self.actionButton.frame.origin.x != 0){
             [UIView animateWithDuration:_sectionStyle.animationDuration

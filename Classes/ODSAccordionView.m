@@ -19,11 +19,39 @@
 @property (nonatomic, assign) BOOL animationEnabled;
 @property (nonatomic, assign) BOOL firstLayout;
 
+@property (nonatomic, copy) void (^actionBlock)(id sender);
+@property (nonatomic, strong) UIButton* actionButton;
+
 @end
 
 @implementation ODSAccordionView {
     NSArray *_sectionViews;
     ODSAccordionSectionStyle *_sectionStyle;
+}
+
+-(void)shouldPresentButton:(BOOL)presentButton
+                  withIcon:(UIImage *)image
+                     title:(NSString*)title
+                    action:(void (^)(id sender))block {
+    if(presentButton){
+        if(!self.actionButton){
+            self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        }
+        
+        if (image) {
+            [self.actionButton setImage:image forState:UIControlStateNormal];
+            [self.actionButton.imageView setContentMode:UIViewContentModeCenter];
+        }
+        [self.actionButton addTarget:self action:@selector(actionButtonPress:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self setActionBlock:block];
+        [self.actionButton setBackgroundColor:_sectionStyle.buttonColor];
+         [self addSubview:self.actionButton];
+
+    } else {
+        [self.actionButton removeFromSuperview];
+        self.actionButton = nil;
+    }
 }
 
 -(id)initWithSections:(NSArray *)sections andSectionStyle:(ODSAccordionSectionStyle *)sectionStyle {
@@ -85,9 +113,9 @@
     ODSAccordionSectionView* sectionView = section;
     int tag = sectionView.tag;
     
-    for (ODSAccordionSectionView *section in _sectionViews) {
-        if (section.tag != tag) {
-            [section collapseSectionAnimated:NO];
+    for (ODSAccordionSectionView *view in _sectionViews) {
+        if (view.tag != tag) {
+            [view collapseSectionAnimated:NO];
         }
     }
     
@@ -98,8 +126,8 @@
     } else {
         height = self.frame.size.height / _sectionViews.count;
     }
-
-    [_sectionStyle setHeaderHeight:(height < 40) ? 40 : height];
+    
+    [_sectionStyle setHeaderHeight: height];
     [self setAnimationEnabled:YES];
     [self setNeedsLayout];
 }
@@ -110,7 +138,6 @@
         CGFloat height = self.frame.size.height / _sectionViews.count;
         [_sectionStyle setHeaderHeight:height];
     }
-    
     
     if(self.animationEnabled){
         [UIView animateWithDuration:_sectionStyle.animationDuration animations:^{
