@@ -166,17 +166,28 @@
 }
 
 -(void)layoutHeader {
-    _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
-    /*
-    if (_expanded) {
-        if (self.bodyHeight = 350) {
-            self.bodyHeight = self.bodyHeight + self.headerHeight;
-            _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, 0);
+    
+    if (self.headerHeight == 50) {
+        if (self.expanded) {
+            
+            if ([[[self superview]superview] isKindOfClass:[ODSAccordionSectionView class]]) {
+                _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, 0);
+                //self.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+                //_sectionStyle.headerHeight = 0;
+            } else {
+                //_sectionStyle.headerHeight = 50;
+                _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
+            }
+            
+        } else {
+            _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
         }
     } else {
         _header.frame = CGRectMake(_header.frame.origin.x, _header.frame.origin.y, self.width, self.headerHeight);
     }
-    */
+    
+    
+
     CGSize arrowSize = _arrowIcon.frame.size;
     if (_sectionStyle.headerStyle == ODSAccordionHeaderStyleLabelLeft){
         [_header setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
@@ -219,7 +230,12 @@
 
 -(void)layoutSection {
     CGSize fittingSize = _sectionView.bounds.size;
-    _sectionView.frame = CGRectMake(0, self.headerHeight, self.width, fittingSize.height);
+    
+    if ([[[self superview]superview] isKindOfClass:[ODSAccordionSectionView class]]) {
+        _sectionView.frame = CGRectMake(0, 0, self.width, 400);
+    } else {
+        _sectionView.frame = CGRectMake(0, self.headerHeight, self.width, fittingSize.height);
+    }
 }
 
 -(CGFloat)expandedHeight {

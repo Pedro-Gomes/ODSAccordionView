@@ -121,11 +121,20 @@
     
     CGFloat height;
     
-    if (expanded) {
-        height = (self.frame.size.height - bodyHeight) / _sectionViews.count;
+    if (sectionView.expanded) {
+        if ([[self superview] isKindOfClass:[ODSAccordionSectionView class]]) {
+            height = (self.frame.size.height - bodyHeight) / _sectionViews.count;
+            //sectionView.bodyHeight = bodyHeight + height;
+            
+        } else {
+            height = (self.frame.size.height - bodyHeight) / _sectionViews.count;
+        }
+        
     } else {
         height = self.frame.size.height / _sectionViews.count;
     }
+    
+
     
     [_sectionStyle setHeaderHeight: height];
     [self setAnimationEnabled:YES];
